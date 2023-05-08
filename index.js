@@ -76,17 +76,18 @@ app.get('/nosql-injection', async (req, res) => {
     var username = req.query.user;
 
     if (!username) {
-        res.send(`<h3>no user provided - try /nosql-injection?user=name</h3> <h3>or /nosql-injection?user[$ne]=name</h3>`);
+        res.send(`<h3>No user provided - try /nosql-injection?user=name</h3> <h3>or /nosql-injection?user[$ne]=name</h3>`);
         return;
     }
-    console.log("user: " + username);
 
     const schema = Joi.string().max(20).required();
     const validationResult = schema.validate(username);
 
     if (validationResult.error != null) {
         console.log(validationResult.error);
-        res.send("<h1 style='color:darkred;'>A NoSQL injection attack was detected!!</h1>");
+        res.render('nosql-injection', {
+            errorMessage: 'A NoSQL injection attack was detected!'
+        });
         return;
     }
 
@@ -100,8 +101,11 @@ app.get('/nosql-injection', async (req, res) => {
 
     console.log(result);
 
-    res.send(`<h1>Hello ${username}</h1>`);
+    res.render('nosql-injection', {
+        result
+    });
 });
+
 
 app.get('/members', (req, res) => {
     if (!req.session.authenticated) {
@@ -136,19 +140,24 @@ app.post('/submitUser', async (req, res) => {
         password: Joi.string().max(20).required()
     });
 
+    // Validate if any of the form fields are empty
     const validationResult = schema.validate({
         name,
         email,
         password
     });
 
+    // Send message to submitUser.ejs if any field validation has failed
     if (validationResult.error != null) {
         console.log(validationResult.error);
         const message = validationResult.error.details[0].message;
-        res.send(`<h3>${message}</h3><a href="/signup">Go back to Sign Up</a>`);
+        res.render("submitUser", {
+            message: message
+        });
         return;
     }
 
+    // User bcrype to hash user's password
     var hashedPassword = await bcrypt.hash(password, saltRounds);
 
     await userCollection.insertOne({
