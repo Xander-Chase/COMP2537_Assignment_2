@@ -13,7 +13,6 @@ const app = express();
 
 const Joi = require("joi");
 
-
 const expireTime = 60 * 60; //expires after 1 hour 
 
 /* secret information section */
@@ -26,8 +25,11 @@ const mongodb_session_secret = process.env.MONGODB_SESSION_SECRET;
 const node_session_secret = process.env.NODE_SESSION_SECRET;
 /* END secret section */
 
+app.set('view engine', 'ejs');
 
-const { connectToDatabase } = include('databaseConnection');
+const {
+    connectToDatabase
+} = include('databaseConnection');
 let userCollection;
 
 async function init() {
@@ -58,29 +60,17 @@ app.use(session({
 }));
 
 app.get('/', (req, res) => {
-    let html = '';
 
     if (!req.session.authenticated) {
-        // User is not logged in
-        html += `
-            <a href="/signup">Sign Up</a>
-            <br>
-            <a href="/login">Log In</a>
-        `;
+        res.render('index');
     } else {
-        // User is logged in
-        html += `
-            <h1>Hello, ${req.session.name}</h1>
-            <a href="/members">Members Area</a>
-            <br>
-            <a href="/logout">Log Out</a>
-        `;
+        const usersName = req.session.name;
+
+        res.render("home", {
+            user: usersName
+        });
     }
-
-    res.send(html);
 });
-
-
 
 app.get('/nosql-injection', async (req, res) => {
     var username = req.query.user;
@@ -119,47 +109,19 @@ app.get('/members', (req, res) => {
         return;
     }
 
-    const images = [
-        'ale-vs-lager.png',
-        'beer_taxonomy.webp',
-        'Beer_Flavor_Map.png'
-    ];
+    const usersName = req.session.name;
 
-    const randomImage = images[Math.floor(Math.random() * images.length)];
-
-    var html = `
-    <h1>Hello, ${req.session.name}</h1>
-    <a href="/logout">Log Out</a>
-    <br>
-    <img src="${randomImage}" alt="Random image" />
-
-    `;
-    res.send(html);
+    res.render("members", {
+        user: usersName
+    });
 });
 
 app.get('/signup', (req, res) => {
-    var html = `
-    Sign Up
-    <form action='/submitUser' method='post'>
-    <input name='name' type='text' placeholder='Name'>
-    <input name='email' type='email' placeholder='Email'>
-    <input name='password' type='password' placeholder='Password'>
-    <button>Submit</button>
-    </form>
-    `;
-    res.send(html);
+    res.render('signup');
 });
 
 app.get('/login', (req, res) => {
-    var html = `
-    log in
-    <form action='/loggingin' method='post'>
-    <input name='email' type='text' placeholder='email'>
-    <input name='password' type='password' placeholder='password'>
-    <button>Submit</button>
-    </form>
-    `;
-    res.send(html);
+    res.render('login');
 });
 
 
@@ -260,19 +222,6 @@ app.post('/loggingin', async (req, res) => {
 app.get('/logout', (req, res) => {
     req.session.destroy();
     res.redirect('/');
-});
-
-app.get('/cat/:id', (req, res) => {
-
-    var cat = req.params.id;
-
-    if (cat == 1) {
-        res.send("Fluffy: <img src='/fluffy.gif' style='width:250px;'>");
-    } else if (cat == 2) {
-        res.send("Socks: <img src='/socks.gif' style='width:250px;'>");
-    } else {
-        res.send("Invalid cat id: " + cat);
-    }
 });
 
 app.use(express.static(__dirname + "/public"));

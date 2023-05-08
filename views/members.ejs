@@ -1,0 +1,20 @@
+<%- include("templates/header") %>
+
+<h1>Hello, <%= user %>!</h1>
+<a href="/logout">Log Out</a>
+<br>
+<img id="randomImage" alt="Random image" />
+
+<script>
+  const images = [
+    '/ale-vs-lager.png',
+    '/beer_taxonomy.webp',
+    '/Beer_Flavor_Map.png'
+  ];
+
+  const randomImage = images[Math.floor(Math.random() * images.length)];
+  const imageElement = document.getElementById('randomImage');
+  imageElement.src = randomImage;
+</script>
+
+<%- include("templates/footer") %>
