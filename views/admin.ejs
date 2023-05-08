@@ -1,0 +1,25 @@
+<%- include("templates/headerAuthenticated") %>
+
+<div style="padding-left: 15%;">
+    <h1>Users</h1>
+
+    <table>
+        <tbody>
+            <% users.forEach(user => { %>
+            <tr>
+                <td style="padding-right: 10px;"><%= user.name %></td>
+                <td style="padding-right: 10px;">(<%= user.type %>)</td>
+                <td>
+                    <% if (user.type === 'admin') { %>
+                    <a href="/admin/demote/<%= user._id %>" class="btn btn-primary white-font">Demote</a>
+                    <% } else { %>
+                    <a href="/admin/promote/<%= user._id %>" class="btn btn-danger white-font">Promote</a>
+                    <% } %>
+                </td>
+            </tr>
+            <% }) %>
+        </tbody>
+    </table>
+</div>
+
+<%- include("templates/footer") %>

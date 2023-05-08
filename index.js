@@ -4,6 +4,9 @@ require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
+const {
+    ObjectId
+} = require('mongodb');
 const bcrypt = require('bcrypt');
 const saltRounds = 12;
 
@@ -166,7 +169,8 @@ app.post('/submitUser', async (req, res) => {
     await userCollection.insertOne({
         name: name,
         email: email,
-        password: hashedPassword
+        password: hashedPassword,
+        type: 'user'
     });
     console.log("Inserted user");
 
@@ -235,10 +239,50 @@ app.post('/loggingin', async (req, res) => {
     }
 });
 
-app.get('/logout', (req, res) => {
-    req.session.destroy();
-    res.redirect('/');
+app.get('/admin', async (req, res) => {
+    const user = req.user;
+
+    res.render('admin', {
+        users
+    });
 });
+
+app.get('/admin/promote/:userId', async (req, res) => {
+    const userId = req.params.userId;
+
+    // Update the user's type to 'admin' in the MongoDB database
+    await userCollection.updateOne({
+        _id: ObjectId(userId)
+    }, {
+        $set: {
+            type: 'admin'
+        }
+    });
+});
+
+app.get('/admin/demote/:userId', async (req, res) => {
+    const userId = req.params.userId;
+
+    await userCollection.updateOne({
+        _id: ObjectId(userId)
+    }, {
+        $set: {
+            type: 'user'
+        }
+    });
+
+    res.redirect('/admin');
+});
+
+app.post('/logout', (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            console.log(err);
+        }
+        res.render('/');
+    });
+});
+
 
 app.use(express.static(__dirname + "/public"));
 
