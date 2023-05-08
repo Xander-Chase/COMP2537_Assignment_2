@@ -128,6 +128,9 @@ app.get('/login', (req, res) => {
     res.render('login');
 });
 
+app.get('/loginSubmit', (req, res) => {
+    res.render('loginSubmit');
+});
 
 app.post('/submitUser', async (req, res) => {
     var name = req.body.name;
@@ -207,8 +210,10 @@ app.post('/loggingin', async (req, res) => {
     }).toArray();
 
     if (result.length != 1) {
-        console.log("user not found");
-        res.redirect("/login");
+        const message = "user not found";
+        res.render("loginSubmit", {
+            message: message
+        });
         return;
     }
 
@@ -222,8 +227,10 @@ app.post('/loggingin', async (req, res) => {
         res.redirect('/members');
         return;
     } else {
-        console.log("incorrect password");
-        res.redirect("/login");
+        const message = "incorrect password";
+        res.render("loginSubmit", {
+            message: message
+        });
         return;
     }
 });
