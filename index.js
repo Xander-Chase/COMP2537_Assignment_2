@@ -4,9 +4,7 @@ require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
-const {
-    ObjectId
-} = require('mongodb');
+const { ObjectId } = require('mongodb');
 const bcrypt = require('bcrypt');
 const saltRounds = 12;
 
@@ -109,8 +107,20 @@ app.get('/nosql-injection', async (req, res) => {
     });
 });
 
+app.get('/headerAuthenticated', async (req, res) => {
 
-app.get('/members', (req, res) => {
+    const usersName = req.session.name;
+
+    const user = await userCollection.findOne({ name: usersName }, { projection: { type: 1 } });
+
+    
+    res.render("headerAuthenticated", {
+        user: usersName,
+        userType: user.type 
+    });
+});
+
+app.get('/members', async (req, res) => {
     if (!req.session.authenticated) {
         res.redirect('/');
         return;
@@ -118,8 +128,12 @@ app.get('/members', (req, res) => {
 
     const usersName = req.session.name;
 
+    const user = await userCollection.findOne({ name: usersName }, { projection: { type: 1 } });
+
+    
     res.render("members", {
-        user: usersName
+        user: usersName,
+        userType: user.type 
     });
 });
 
@@ -240,19 +254,12 @@ app.post('/loggingin', async (req, res) => {
 });
 
 app.get('/admin', async (req, res) => {
-    try {
-      // Fetch the users from the MongoDB database
-      const users = await userCollection.find().toArray();
-  
-      res.render('admin', {
-        users: users
-      });
-    } catch (error) {
-      console.log(error);
-      res.status(500).send('Internal Server Error');
-    }
-  });
-  
+        const users = await userCollection.find().toArray();
+
+        res.render('admin', {
+            users
+        });
+});
 
 app.get('/admin/promote/:userId', async (req, res) => {
     const userId = req.params.userId;
