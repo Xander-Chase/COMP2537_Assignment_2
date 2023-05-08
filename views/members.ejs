@@ -1,20 +1,25 @@
 <%- include("templates/headerAuthenticated") %>
 
-<h1>Hello, <%= user %>!</h1>
-<a href="/logout">Log Out</a>
-<br>
-<img id="randomImage" alt="Random image" />
-
-<script>
-  const images = [
-    '/ale-vs-lager.png',
-    '/beer_taxonomy.webp',
-    '/Beer_Flavor_Map.png'
-  ];
-
-  const randomImage = images[Math.floor(Math.random() * images.length)];
-  const imageElement = document.getElementById('randomImage');
-  imageElement.src = randomImage;
-</script>
+<div style="padding-left: 15%;">
+  <h1 >Hello, <%= user %>!</h1>
+  <a href="/logout">Log Out</a>
+  <br>
+  <br>
+  <div class="container">
+    <h2>Members Area</h2>
+  
+    <div class="row">
+      <div class="col-md-4">
+        <img src="/ale-vs-lager.png" alt="Ale vs Lager" class="img-fluid">
+      </div>
+      <div class="col-md-4">
+        <img src="/beer_taxonomy.webp" alt="Beer Taxonomy" class="img-fluid">
+      </div>
+      <div class="col-md-4">
+        <img src="/Beer_Flavor_Map.png" alt="Beer Flavor Map" class="img-fluid">
+      </div>
+    </div>
+  </div>
+</div>
 
 <%- include("templates/footer") %>

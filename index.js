@@ -240,38 +240,58 @@ app.post('/loggingin', async (req, res) => {
 });
 
 app.get('/admin', async (req, res) => {
-    const user = req.user;
-
-    res.render('admin', {
-        users
-    });
-});
+    try {
+      // Fetch the users from the MongoDB database
+      const users = await userCollection.find().toArray();
+  
+      res.render('admin', {
+        users: users
+      });
+    } catch (error) {
+      console.log(error);
+      res.status(500).send('Internal Server Error');
+    }
+  });
+  
 
 app.get('/admin/promote/:userId', async (req, res) => {
     const userId = req.params.userId;
 
-    // Update the user's type to 'admin' in the MongoDB database
-    await userCollection.updateOne({
-        _id: ObjectId(userId)
-    }, {
-        $set: {
-            type: 'admin'
-        }
-    });
+    try {
+        // Update the user's type to 'admin' in the MongoDB database
+        await userCollection.updateOne({
+            _id: ObjectId(userId)
+        }, {
+            $set: {
+                type: 'admin'
+            }
+        });
+
+        res.redirect('/admin');
+    } catch (error) {
+        console.log(error);
+        res.status(500).send('Internal Server Error');
+    }
 });
 
 app.get('/admin/demote/:userId', async (req, res) => {
     const userId = req.params.userId;
 
-    await userCollection.updateOne({
-        _id: ObjectId(userId)
-    }, {
-        $set: {
-            type: 'user'
-        }
-    });
+    try {
+        // Update the user's type to 'user' in the MongoDB database
+        await userCollection.updateOne({
+            _id: ObjectId(userId)
+        }, {
+            $set: {
+                type: 'user'
+            }
+        });
 
-    res.redirect('/admin');
+        res.redirect('/admin');
+    } catch (error) {
+        console.log(error);
+        res.status(500).send('Internal Server Error');
+    }
 });
 
 app.post('/logout', (req, res) => {
@@ -279,7 +299,7 @@ app.post('/logout', (req, res) => {
         if (err) {
             console.log(err);
         }
-        res.render('/');
+        res.redirect('/');
     });
 });
 
