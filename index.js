@@ -284,30 +284,28 @@ app.post('/loggingin', async (req, res) => {
 });
 
 function requireLogin(req, res, next) {
-    if (!req.session.authenticated) {
+    if (req.session.authenticated) {
+        next();
+    } else {
         res.redirect('/login');
-        return;
     }
-
-    next();
 }
 
 
 app.get('/admin', requireLogin, async (req, res) => {
     const users = await userCollection.find().toArray();
+    let errorMessage = '';
 
     if (req.session.type !== 'admin') {
-        const errorMessage = 'You do not have permission to access this page.';
-        res.render('admin', {
-            errorMessage
-        });
-        return;
+        errorMessage = 'You do not have permission to access this page.';
     }
 
     res.render('admin', {
-        users
+        users,
+        errorMessage
     });
 });
+
 
 app.get('/admin/promote/:userId', async (req, res) => {
     const userId = req.params.userId;
