@@ -67,13 +67,6 @@ app.get('/home', async (req, res) => {
     const usersName = req.session.name;
     let userType;
 
-    if (usersName) {
-        const user = await userCollection.findOne({ name: usersName }, { projection: { type: 1 } });
-        if (user) {
-            userType = user.type;
-        }
-    }
-
     res.render("home", {
         user: usersName,
         userType: userType
@@ -87,6 +80,7 @@ app.get('/members', async (req, res) => {
 
     const user = await userCollection.findOne({ name: usersName }, { projection: { type: 1 } });
 
+    
 
 	res.render("members", {
         user: usersName,
@@ -236,7 +230,7 @@ app.post('/loggingin', async (req, res) => {
     const result = await userCollection.find({
         email: email
     }).project({
-        username: 1,
+        type: 1,
         password: 1,
         _id: 1,
         name: 1
@@ -253,7 +247,6 @@ app.post('/loggingin', async (req, res) => {
     if (await bcrypt.compare(password, result[0].password)) {
         console.log("correct password");
         req.session.authenticated = true;
-        req.session.username = result[0].username;
         req.session.name = result[0].name;
         req.session.cookie.maxAge = expireTime;
         req.session.type = result[0].type;
