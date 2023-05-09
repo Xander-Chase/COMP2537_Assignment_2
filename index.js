@@ -15,7 +15,7 @@ const app = express();
 
 const Joi = require("joi");
 
-const expireTime = 60 * 60; //expires after 1 hour 
+const expireTime = 24 * 60 * 60 * 1000 ; 
 
 /* secret information section */
 const mongodb_host = process.env.MONGODB_HOST;
@@ -38,6 +38,8 @@ let userCollection;
 async function init() {
     const database = await connectToDatabase();
     userCollection = database.db(mongodb_database).collection('users');
+
+
 }
 
 init();
@@ -54,7 +56,7 @@ var mongoStore = MongoStore.create({
 
 app.use(session({
     secret: node_session_secret,
-    store: mongoStore, //default is memory store 
+    store: mongoStore, 
     saveUninitialized: false,
     resave: true
 }));
@@ -75,16 +77,14 @@ app.get('/home', async (req, res) => {
 
 
 app.get('/members', async (req, res) => {
-
+    console.log(req.session.type);
     const usersName = req.session.name;
 
-    const user = await userCollection.findOne({ name: usersName }, { projection: { type: 1 } });
-
-    
+    const user = await userCollection.find({ name: usersName }, { projection: { type: 1 } }).toArray();
 
 	res.render("members", {
         user: usersName,
-        userType: user.type 
+        userType: user[0].type 
     });
 });
 
