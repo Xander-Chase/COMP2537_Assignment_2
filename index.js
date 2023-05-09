@@ -4,6 +4,7 @@ require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
+const { ObjectId } = require('mongodb');
 const bcrypt = require('bcrypt');
 const saltRounds = 12;
 const path = require('path');
@@ -40,7 +41,6 @@ async function init() {
 }
 
 init();
-
 app.use(express.urlencoded({
     extended: false
 }));
@@ -256,6 +256,8 @@ app.post('/loggingin', async (req, res) => {
         req.session.username = result[0].username;
         req.session.name = result[0].name;
         req.session.cookie.maxAge = expireTime;
+        req.session.type = result[0].type;
+
 
         res.redirect('/members');
         return;
