@@ -4,7 +4,9 @@ require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
-const { ObjectId } = require('mongodb');
+const {
+    ObjectId
+} = require('mongodb');
 const bcrypt = require('bcrypt');
 const saltRounds = 12;
 const path = require('path');
@@ -15,7 +17,7 @@ const app = express();
 
 const Joi = require("joi");
 
-const expireTime = 24 * 60 * 60 * 1000 ; 
+const expireTime = 24 * 60 * 60 * 1000;
 
 /* secret information section */
 const mongodb_host = process.env.MONGODB_HOST;
@@ -56,13 +58,13 @@ var mongoStore = MongoStore.create({
 
 app.use(session({
     secret: node_session_secret,
-    store: mongoStore, 
+    store: mongoStore,
     saveUninitialized: false,
     resave: true
 }));
 
 app.get('/', (req, res) => {
-	res.render("index");
+    res.render("index");
 });
 
 app.get('/home', async (req, res) => {
@@ -80,11 +82,17 @@ app.get('/members', async (req, res) => {
     console.log(req.session.type);
     const usersName = req.session.name;
 
-    const user = await userCollection.find({ name: usersName }, { projection: { type: 1 } }).toArray();
+    const user = await userCollection.find({
+        name: usersName
+    }, {
+        projection: {
+            type: 1
+        }
+    }).toArray();
 
-	res.render("members", {
+    res.render("members", {
         user: usersName,
-        userType: user[0].type 
+        userType: user[0].type
     });
 });
 
@@ -126,23 +134,35 @@ app.get('/headerAuthenticated', async (req, res) => {
 
     const usersName = req.session.name;
 
-    const user = await userCollection.findOne({ name: usersName }, { projection: { type: 1 } });
+    const user = await userCollection.findOne({
+        name: usersName
+    }, {
+        projection: {
+            type: 1
+        }
+    });
 
-    
+
     res.render("headerAuthenticated", {
         user: usersName,
-        userType: user.type 
+        userType: user.type
     });
 });
 
 app.get('/members', async (req, res) => {
 
     const usersName = req.session.name;
-    const user = await userCollection.findOne({ name: usersName }, { projection: { type: 1 } });
+    const user = await userCollection.findOne({
+        name: usersName
+    }, {
+        projection: {
+            type: 1
+        }
+    });
 
     res.render("members", {
         user: usersName,
-        userType: user.type 
+        userType: user.type
     });
 });
 
@@ -263,12 +283,30 @@ app.post('/loggingin', async (req, res) => {
     }
 });
 
-app.get('/admin', async (req, res) => {
-        const users = await userCollection.find().toArray();
+function requireLogin(req, res, next) {
+    if (!req.session.authenticated) {
+        res.redirect('/login');
+        return;
+    }
 
+    next();
+}
+
+
+app.get('/admin', requireLogin, async (req, res) => {
+    const users = await userCollection.find().toArray();
+
+    if (req.session.type !== 'admin') {
+        const errorMessage = 'You do not have permission to access this page.';
         res.render('admin', {
-            users
+            errorMessage
         });
+        return;
+    }
+
+    res.render('admin', {
+        users
+    });
 });
 
 app.get('/admin/promote/:userId', async (req, res) => {
