@@ -24,12 +24,30 @@
             </a>
 
             <ul class="nav nav-pills">
-                <li class="nav-item"><a href="/members" class="nav-link active" aria-current="page">Home</a></li>
-                <li class="nav-item"><a href="/home" class="nav-link">Members Area</a></li>
+                
+                <li class="nav-item"><a href="/home" class="nav-link active">Home</a></li>
+                <li class="nav-item"><a href="/members" class="nav-link">Members</a></li>
                 <% if (typeof userType !== 'undefined' && userType === 'admin') { %>
                 <li class="nav-item"><a href="/admin" class="nav-link">Settings</a></li>
                 <% } %>
-                <li class="nav-item"><a href="logout" class="nav-link">Logout</a></li>
+                <li class="nav-item"><a href="#" onclick="logout()" class="nav-link">Logout</a></li>
             </ul>
         </header>
     </div>
+
+    <script>
+        function logout() {
+            fetch('/logout', {
+                    method: 'POST'
+                })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.href = '/';
+                    }
+                })
+        }
+
+        function navigateTo(route) {
+            window.location.href = route;
+        }
+    </script>

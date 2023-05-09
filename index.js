@@ -4,9 +4,9 @@ require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
-const { ObjectId } = require('mongodb');
 const bcrypt = require('bcrypt');
 const saltRounds = 12;
+const path = require('path');
 
 const port = process.env.PORT || 3000;
 
@@ -27,6 +27,7 @@ const node_session_secret = process.env.NODE_SESSION_SECRET;
 /* END secret section */
 
 app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'))
 
 const {
     connectToDatabase
@@ -39,8 +40,6 @@ async function init() {
 }
 
 init();
-
-app.use(express.static(__dirname + "/public"));
 
 app.use(express.urlencoded({
     extended: false
@@ -61,16 +60,38 @@ app.use(session({
 }));
 
 app.get('/', (req, res) => {
+	res.render("index");
+});
 
-    if (!req.session.authenticated) {
-        res.render('index');
-    } else {
-        const usersName = req.session.name;
+app.get('/home', async (req, res) => {
+    const usersName = req.session.name;
+    let userType;
 
-        res.render("home", {
-            user: usersName
-        });
+    if (usersName) {
+        const user = await userCollection.findOne({ name: usersName }, { projection: { type: 1 } });
+        if (user) {
+            userType = user.type;
+        }
     }
+
+    res.render("home", {
+        user: usersName,
+        userType: userType
+    });
+});
+
+
+app.get('/members', async (req, res) => {
+
+    const usersName = req.session.name;
+
+    const user = await userCollection.findOne({ name: usersName }, { projection: { type: 1 } });
+
+
+	res.render("members", {
+        user: usersName,
+        userType: user.type 
+    });
 });
 
 app.get('/nosql-injection', async (req, res) => {
@@ -121,16 +142,10 @@ app.get('/headerAuthenticated', async (req, res) => {
 });
 
 app.get('/members', async (req, res) => {
-    if (!req.session.authenticated) {
-        res.redirect('/');
-        return;
-    }
 
     const usersName = req.session.name;
-
     const user = await userCollection.findOne({ name: usersName }, { projection: { type: 1 } });
 
-    
     res.render("members", {
         user: usersName,
         userType: user.type 
